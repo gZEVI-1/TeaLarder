@@ -1,0 +1,1618 @@
+[
+  {
+    "model": "Catalog.Tea",
+    "pk": 1,
+    "fields": {
+      "availability": false,
+      "name": "пуэрные головы",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "хорошо для варки",
+      "tea_type": "puerSHU",
+      "price": null,
+      "mark": 6.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 2,
+    "fields": {
+      "availability": false,
+      "name": "Красный бык 2022",
+      "place_of_purchase": "озон (mf tea)",
+      "description": "топ шу",
+      "tea_type": "puerSHU",
+      "price": 4.96,
+      "mark": 8.5,
+      "year_of_harvest": 2022,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 3,
+    "fields": {
+      "availability": true,
+      "name": "З.печать семь сыновей",
+      "place_of_purchase": "озон (mf tea)",
+      "description": "слишком сильная пресовка",
+      "tea_type": "puerSHEN",
+      "price": 2.28,
+      "mark": 4.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 4,
+    "fields": {
+      "availability": false,
+      "name": "Те Гуань Инь",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "тусклый, без запаха и слабый вкус, возможно, плохая партия",
+      "tea_type": "oolongNF",
+      "price": null,
+      "mark": 5.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 5,
+    "fields": {
+      "availability": false,
+      "name": "Да Хун Пао",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "вкус нормальный, аромат хороший",
+      "tea_type": "oolongNF",
+      "price": null,
+      "mark": 7.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 6,
+    "fields": {
+      "availability": false,
+      "name": "Дянь Хун Цзинь Хао (Золотая обезьяна)",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "бархатистый, сладкий",
+      "tea_type": "red",
+      "price": null,
+      "mark": 8.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 7,
+    "fields": {
+      "availability": false,
+      "name": "Шуй Сянь",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "нужно класть больше чая",
+      "tea_type": "oolongNF",
+      "price": null,
+      "mark": 8.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 8,
+    "fields": {
+      "availability": false,
+      "name": "Дянь Хун (премиум)",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "хороший дянь хун, но первые\nпроливы с нотами шиповника",
+      "tea_type": "red",
+      "price": null,
+      "mark": 7.8,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 9,
+    "fields": {
+      "availability": false,
+      "name": "Лун Цзин",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "сладкий, немного хлебный",
+      "tea_type": "green",
+      "price": null,
+      "mark": 8.3,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 10,
+    "fields": {
+      "availability": false,
+      "name": "Да Хун Пао",
+      "place_of_purchase": "Art of Tea",
+      "description": "хороший запах, средний вкус",
+      "tea_type": "oolongNF",
+      "price": 8.4,
+      "mark": 7.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 11,
+    "fields": {
+      "availability": false,
+      "name": "Дянь Хун со слоном 2022",
+      "place_of_purchase": "Art of Tea",
+      "description": "топ заваривенем",
+      "tea_type": "red",
+      "price": 6.5,
+      "mark": 8.5,
+      "year_of_harvest": 2022,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 12,
+    "fields": {
+      "availability": false,
+      "name": "Мао Се Ван",
+      "place_of_purchase": "Art of Tea",
+      "description": "мягкий, ворсистый",
+      "tea_type": "green",
+      "price": 7.6,
+      "mark": 8.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 13,
+    "fields": {
+      "availability": false,
+      "name": "Красный бык 2022",
+      "place_of_purchase": "озон (TeaMur)",
+      "description": "примерно так же как и прошлый",
+      "tea_type": "puerSHU",
+      "price": 5.48,
+      "mark": 8.0,
+      "year_of_harvest": 2022,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 14,
+    "fields": {
+      "availability": false,
+      "name": "Гунтин Императорский Дар 2014",
+      "place_of_purchase": "озон (Чайная мастерская)",
+      "description": "типичный выдержанный гкнтин",
+      "tea_type": "puerSHU",
+      "price": 3.16,
+      "mark": 8.0,
+      "year_of_harvest": 2014,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 15,
+    "fields": {
+      "availability": false,
+      "name": "Те Гуань Инь",
+      "place_of_purchase": "озон (Чайная мастерская)",
+      "description": "слишком травянистый",
+      "tea_type": "oolongNF",
+      "price": 4.43,
+      "mark": 6.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 16,
+    "fields": {
+      "availability": false,
+      "name": "Старая деревня 2017",
+      "place_of_purchase": "озон (mf tea)",
+      "description": "запах бани топ)",
+      "tea_type": "puerSHEN",
+      "price": 2.24,
+      "mark": 7.6,
+      "year_of_harvest": 2017,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 17,
+    "fields": {
+      "availability": false,
+      "name": "Булан 2012",
+      "place_of_purchase": "озон (ИП Овсянова)",
+      "description": "дефекты",
+      "tea_type": "puerSHU",
+      "price": 2.74,
+      "mark": 4.0,
+      "year_of_harvest": 2012,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 18,
+    "fields": {
+      "availability": true,
+      "name": "Маття",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "хз как маттю коментировать",
+      "tea_type": "matcha",
+      "price": null,
+      "mark": 7.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 19,
+    "fields": {
+      "availability": false,
+      "name": "Бай Хао Инь Чжень",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "мягкий, цветочный (нужна мягкая вода)",
+      "tea_type": "white",
+      "price": null,
+      "mark": 8.6,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 20,
+    "fields": {
+      "availability": false,
+      "name": "Улун с эстрагоном",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "трэш",
+      "tea_type": "flavored",
+      "price": null,
+      "mark": 3.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 21,
+    "fields": {
+      "availability": false,
+      "name": "Ин Син Улун",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "слишком сложный запах, возможно он ароматизированный",
+      "tea_type": "oolongNF",
+      "price": null,
+      "mark": 6.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 22,
+    "fields": {
+      "availability": false,
+      "name": "Дун Дин",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "нежный, слегка хлебный",
+      "tea_type": "oolongNF",
+      "price": null,
+      "mark": 7.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "Taiwan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 23,
+    "fields": {
+      "availability": false,
+      "name": "Юн Джень Гунтин (2023 синь вэнь)",
+      "place_of_purchase": "озон (TeaMur)",
+      "description": "гарантовая нефть, мало проливов",
+      "tea_type": "puerSHU",
+      "price": 3.13,
+      "mark": 7.3,
+      "year_of_harvest": 2023,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 24,
+    "fields": {
+      "availability": false,
+      "name": "Фен Хуан дан Цун",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "миндалевый запах в сухом и после промывки, вкус напоминает тги",
+      "tea_type": "oolongGD",
+      "price": null,
+      "mark": 6.7,
+      "year_of_harvest": null,
+      "place_of_harvest": "Guangdong",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 25,
+    "fields": {
+      "availability": false,
+      "name": "Беловласая обезьяна (Бай Хао)",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "легкий, похож на зеленый мао фен",
+      "tea_type": "white",
+      "price": null,
+      "mark": 6.3,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 26,
+    "fields": {
+      "availability": true,
+      "name": "Ганпаудер",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "",
+      "tea_type": "green",
+      "price": null,
+      "mark": 3.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 27,
+    "fields": {
+      "availability": true,
+      "name": "Жемчужины с жасмином",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "хорошо р4 , только главное не передерживать",
+      "tea_type": "green",
+      "price": null,
+      "mark": 7.6,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 28,
+    "fields": {
+      "availability": false,
+      "name": "Лун Цзин",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "норм",
+      "tea_type": "green",
+      "price": null,
+      "mark": 7.1,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 29,
+    "fields": {
+      "availability": true,
+      "name": "Те Гуань Инь",
+      "place_of_purchase": "tasty coffee",
+      "description": "оч дешево 250г\\400р, за эту цену норм, а так не оч",
+      "tea_type": "oolongSF",
+      "price": 3.2,
+      "mark": 5.2,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 30,
+    "fields": {
+      "availability": false,
+      "name": "Да Хун Пао",
+      "place_of_purchase": "озон (Чайное состояние)",
+      "description": "мало проливов, настаивание неочень",
+      "tea_type": "oolongNF",
+      "price": 4.62,
+      "mark": 5.1,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 31,
+    "fields": {
+      "availability": false,
+      "name": "Габа Алишань",
+      "place_of_purchase": "озон (Чайная мастерская)",
+      "description": "первая габа ,лучше чем булан",
+      "tea_type": "oolongGaba",
+      "price": 6.88,
+      "mark": 8.4,
+      "year_of_harvest": null,
+      "place_of_harvest": "Taiwan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 32,
+    "fields": {
+      "availability": false,
+      "name": "Габа Булан",
+      "place_of_purchase": "озон (Чайное состояние)",
+      "description": "лучше в настаивании+ неплохо с шу",
+      "tea_type": "oolongGaba",
+      "price": 4.18,
+      "mark": 7.6,
+      "year_of_harvest": null,
+      "place_of_harvest": "Taiwan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 33,
+    "fields": {
+      "availability": false,
+      "name": "Гунтин Ван 2012",
+      "place_of_purchase": "Art of Tea",
+      "description": "спидометр. Классика. Бодрый креозотный шу",
+      "tea_type": "puerSHU",
+      "price": 7.84,
+      "mark": 9.5,
+      "year_of_harvest": 2012,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 34,
+    "fields": {
+      "availability": false,
+      "name": "Гао Сян Хун Фен",
+      "place_of_purchase": "Art of Tea",
+      "description": "медовый, бархатистый, свежий",
+      "tea_type": "red",
+      "price": 9.8,
+      "mark": 8.8,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 35,
+    "fields": {
+      "availability": false,
+      "name": "Чжан Сян Гу Шу 2015 (пробник)",
+      "place_of_purchase": "Art of Tea",
+      "description": "пробник",
+      "tea_type": "puerSHU",
+      "price": 0.0,
+      "mark": 9.0,
+      "year_of_harvest": 2015,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 36,
+    "fields": {
+      "availability": false,
+      "name": "Инь Чжень",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "",
+      "tea_type": "white",
+      "price": null,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 37,
+    "fields": {
+      "availability": false,
+      "name": "Лапсанг Сушонг (копченый)",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "",
+      "tea_type": "red",
+      "price": null,
+      "mark": 5.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 38,
+    "fields": {
+      "availability": false,
+      "name": "Да Хун Пао(Св.об)",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "мега ароматный, как и всегда",
+      "tea_type": "oolongNF",
+      "price": null,
+      "mark": 8.2,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 39,
+    "fields": {
+      "availability": false,
+      "name": "Да Хун Пао №280(Т.об)",
+      "place_of_purchase": "физ. Маг. В водолее",
+      "description": "среднячок",
+      "tea_type": "oolongNF",
+      "price": null,
+      "mark": 6.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 40,
+    "fields": {
+      "availability": true,
+      "name": "Лао Ча Тоу 2006",
+      "place_of_purchase": "озон (WOW!ЧАЙ!)",
+      "description": "слабо",
+      "tea_type": "puerSHU",
+      "price": 6.28,
+      "mark": 6.0,
+      "year_of_harvest": 2006,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 41,
+    "fields": {
+      "availability": true,
+      "name": "Бай Ша Си (Цзинь Хуа)",
+      "place_of_purchase": "озон (Tea875 Store)",
+      "description": "первая хей ча, в целом неплохо",
+      "tea_type": "black",
+      "price": 7.22,
+      "mark": 8.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 42,
+    "fields": {
+      "availability": false,
+      "name": "Маоцзянь Е Шэн, весна 2024 г",
+      "place_of_purchase": "Art of Tea",
+      "description": "",
+      "tea_type": "green",
+      "price": 10.0,
+      "mark": 9.1,
+      "year_of_harvest": 2024,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 43,
+    "fields": {
+      "availability": false,
+      "name": "Дянь Хун, 2024 г",
+      "place_of_purchase": "Art of Tea",
+      "description": "",
+      "tea_type": "red",
+      "price": 7.0,
+      "mark": 9.0,
+      "year_of_harvest": 2024,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 44,
+    "fields": {
+      "availability": true,
+      "name": "Юн Чжень «Золотой Бык», 2021 г",
+      "place_of_purchase": "Art of Tea",
+      "description": "",
+      "tea_type": "puerSHEN",
+      "price": 9.94,
+      "mark": 9.0,
+      "year_of_harvest": 2021,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 45,
+    "fields": {
+      "availability": false,
+      "name": "Пробник",
+      "place_of_purchase": "озон (Tea875 Store)",
+      "description": "",
+      "tea_type": "puerSHEN",
+      "price": 0.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 46,
+    "fields": {
+      "availability": false,
+      "name": "Пробник",
+      "place_of_purchase": "озон (Tea875 Store)",
+      "description": "",
+      "tea_type": "red",
+      "price": 0.0,
+      "mark": 8.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 47,
+    "fields": {
+      "availability": false,
+      "name": "Да Хун Пао Нун Сян(пробник)",
+      "place_of_purchase": "озон (Tea875 Store)",
+      "description": "",
+      "tea_type": "oolongNF",
+      "price": 0.0,
+      "mark": 6.6,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 48,
+    "fields": {
+      "availability": false,
+      "name": "Шентай Дянь хун 2024г",
+      "place_of_purchase": "Art of Tea",
+      "description": "пробник. Шиповник, малина, мёд",
+      "tea_type": "red",
+      "price": 0.0,
+      "mark": 8.5,
+      "year_of_harvest": 2024,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 49,
+    "fields": {
+      "availability": false,
+      "name": "Сюэ Я (снежная почка) всена 2024г",
+      "place_of_purchase": "Art of Tea",
+      "description": "",
+      "tea_type": "green",
+      "price": 0.0,
+      "mark": 8.0,
+      "year_of_harvest": 2024,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 50,
+    "fields": {
+      "availability": false,
+      "name": "Дянь Хун Ми Сян (Мэнку)май 2023(пробник)",
+      "place_of_purchase": "Art of Tea",
+      "description": "таблетка.Очень вкусно насыщенно, вкус медово-шоколадный , питкий",
+      "tea_type": "red",
+      "price": 0.0,
+      "mark": 9.2,
+      "year_of_harvest": 2023,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 51,
+    "fields": {
+      "availability": false,
+      "name": "Старые деревья Мэнхай апр.2023(пробник)",
+      "place_of_purchase": "Art of Tea",
+      "description": "шоумей.Липовый мёд, сладкая тыква",
+      "tea_type": "white",
+      "price": 0.0,
+      "mark": 8.2,
+      "year_of_harvest": 2023,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 52,
+    "fields": {
+      "availability": false,
+      "name": "Да Лун Шань(Сишуанбаньна) март2023 (пробник)",
+      "place_of_purchase": "Art of Tea",
+      "description": "",
+      "tea_type": "puerSHEN",
+      "price": 0.0,
+      "mark": 8.5,
+      "year_of_harvest": 2023,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 53,
+    "fields": {
+      "availability": false,
+      "name": "Мэнхай (пробник) 2023",
+      "place_of_purchase": "Art of Tea",
+      "description": "",
+      "tea_type": "puerSHU",
+      "price": 0.0,
+      "mark": 8.7,
+      "year_of_harvest": 2023,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 54,
+    "fields": {
+      "availability": false,
+      "name": "Фен Хуан дан Цун",
+      "place_of_purchase": "озон (ЧайК.А.)",
+      "description": "",
+      "tea_type": "oolongGD",
+      "price": 7.76,
+      "mark": 7.6,
+      "year_of_harvest": null,
+      "place_of_harvest": "Guangdong",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 55,
+    "fields": {
+      "availability": true,
+      "name": "Гунтин Юндэ (Юн Фа 2011г.)",
+      "place_of_purchase": "озон (TeaMur)",
+      "description": "",
+      "tea_type": "puerSHU",
+      "price": 2.19,
+      "mark": null,
+      "year_of_harvest": 2011,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 56,
+    "fields": {
+      "availability": false,
+      "name": "\"9978\" \"Подсолнухи\"марки \"Лао Тун Чжи\" от фабрики ХайВань, 2024 г",
+      "place_of_purchase": "озон (TeaMur)",
+      "description": "",
+      "tea_type": "puerSHU",
+      "price": 6.92,
+      "mark": 8.7,
+      "year_of_harvest": 2024,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 57,
+    "fields": {
+      "availability": false,
+      "name": "\"Гу Шу Чунь Сян\" от фабрики Синь Вэнь, 2018 г.",
+      "place_of_purchase": "озон (TeaMur)",
+      "description": "",
+      "tea_type": "puerSHU",
+      "price": 6.92,
+      "mark": 9.0,
+      "year_of_harvest": 2018,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 58,
+    "fields": {
+      "availability": true,
+      "name": "Юн Чжэнь \"Белый лотос\" от фабрики Синь Вэнь. 2023 г.",
+      "place_of_purchase": "озон (TeaMur)",
+      "description": "тотальная нефть",
+      "tea_type": "puerSHU",
+      "price": 4.55,
+      "mark": 7.5,
+      "year_of_harvest": 2023,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 59,
+    "fields": {
+      "availability": true,
+      "name": "Цзинь Цзюнь Мэй",
+      "place_of_purchase": "озон (TeaMur)",
+      "description": "",
+      "tea_type": "red",
+      "price": 10.86,
+      "mark": 9.1,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 60,
+    "fields": {
+      "availability": false,
+      "name": "Габа изумрудная",
+      "place_of_purchase": "озон (mf tea)",
+      "description": "",
+      "tea_type": "oolongGaba",
+      "price": 8.42,
+      "mark": 6.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "Taiwan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 61,
+    "fields": {
+      "availability": true,
+      "name": "Шен блин 200г",
+      "place_of_purchase": "Хайнань 25 хороший магаз",
+      "description": "",
+      "tea_type": "puerSHEN",
+      "price": 27.55,
+      "mark": 8.8,
+      "year_of_harvest": null,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 62,
+    "fields": {
+      "availability": true,
+      "name": "Шен блин 100г",
+      "place_of_purchase": "Хайнань 25 плохой магаз",
+      "description": "",
+      "tea_type": "puerSHEN",
+      "price": 7.25,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 63,
+    "fields": {
+      "availability": false,
+      "name": "Да Хун Пао 150г",
+      "place_of_purchase": "Хайнань 25 хороший магаз",
+      "description": "",
+      "tea_type": "oolongNF",
+      "price": 15.27,
+      "mark": 8.9,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 64,
+    "fields": {
+      "availability": false,
+      "name": "Те Гуань Инь темной обжарки 250г",
+      "place_of_purchase": "Хайнань 25 хороший магаз",
+      "description": "",
+      "tea_type": "oolongSF",
+      "price": 22.27,
+      "mark": 8.6,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 65,
+    "fields": {
+      "availability": false,
+      "name": "----",
+      "place_of_purchase": "Пробник из отеля хайнань",
+      "description": "",
+      "tea_type": "red",
+      "price": 0.0,
+      "mark": 8.8,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 66,
+    "fields": {
+      "availability": true,
+      "name": "Габа медовая",
+      "place_of_purchase": "озон (TeaMur)",
+      "description": "",
+      "tea_type": "oolongGaba",
+      "price": 5.09,
+      "mark": 7.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Taiwan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 67,
+    "fields": {
+      "availability": false,
+      "name": "Чжуе Цин",
+      "place_of_purchase": "Чайная карта",
+      "description": "Отлично в колд брю",
+      "tea_type": "green",
+      "price": 22.0,
+      "mark": 9.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 68,
+    "fields": {
+      "availability": false,
+      "name": "Мао Фен",
+      "place_of_purchase": "Чайная карта",
+      "description": "Хороший базовый зеленый",
+      "tea_type": "green",
+      "price": 7.6,
+      "mark": 8.9,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 69,
+    "fields": {
+      "availability": false,
+      "name": "Юэ Гуан Бай",
+      "place_of_purchase": "Чайная карта",
+      "description": "Необычно, но хорошо",
+      "tea_type": "white",
+      "price": 14.0,
+      "mark": 8.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 70,
+    "fields": {
+      "availability": false,
+      "name": "Тегуаньинь высший сорт",
+      "place_of_purchase": "Art of Tea",
+      "description": "",
+      "tea_type": "oolongSF",
+      "price": 15.0,
+      "mark": 8.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 71,
+    "fields": {
+      "availability": true,
+      "name": "Бин Гу Шу Бай Ча, 2024 г.",
+      "place_of_purchase": "Art of Tea",
+      "description": "",
+      "tea_type": "white",
+      "price": 6.8,
+      "mark": 7.5,
+      "year_of_harvest": 2024,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 72,
+    "fields": {
+      "availability": false,
+      "name": "Габа Наньтоу, премиум",
+      "place_of_purchase": "Art of Tea",
+      "description": "много сухофруктов как в запахе, так и во вкусе",
+      "tea_type": "oolongGaba",
+      "price": 14.8,
+      "mark": 8.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "Taiwan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 73,
+    "fields": {
+      "availability": false,
+      "name": "Е Шен Хун Ча из Уишань",
+      "place_of_purchase": "Art of Tea",
+      "description": "пахнет креветками",
+      "tea_type": "red",
+      "price": 15.0,
+      "mark": 9.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 74,
+    "fields": {
+      "availability": false,
+      "name": "Махэй «Деревенский»",
+      "place_of_purchase": "Art of Tea",
+      "description": "",
+      "tea_type": "puerSHEN",
+      "price": 13.6,
+      "mark": 9.5,
+      "year_of_harvest": null,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 75,
+    "fields": {
+      "availability": false,
+      "name": "\"Ореховый\"",
+      "place_of_purchase": "Чайная карта",
+      "description": "",
+      "tea_type": "puerSHU",
+      "price": 9.8,
+      "mark": 9.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 76,
+    "fields": {
+      "availability": false,
+      "name": "Жоу Гуй",
+      "place_of_purchase": "Чайная карта",
+      "description": "в черных пакетиках. 2 пробника. Хороший дымный",
+      "tea_type": "oolongNF",
+      "price": 13.75,
+      "mark": 9.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 77,
+    "fields": {
+      "availability": true,
+      "name": "Юн Чжень 2017",
+      "place_of_purchase": "Чайная карта",
+      "description": "",
+      "tea_type": "puerSHU",
+      "price": 10.0,
+      "mark": 8.5,
+      "year_of_harvest": 2017,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 78,
+    "fields": {
+      "availability": false,
+      "name": "Дянь Хун",
+      "place_of_purchase": "Чайная карта",
+      "description": "",
+      "tea_type": "red",
+      "price": 7.9,
+      "mark": 9.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 79,
+    "fields": {
+      "availability": false,
+      "name": "Сяо чжун",
+      "place_of_purchase": "Чайная карта",
+      "description": "1 пробник красный",
+      "tea_type": "red",
+      "price": 13.75,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 80,
+    "fields": {
+      "availability": true,
+      "name": "Габа красная",
+      "place_of_purchase": "озон (TeaMur)",
+      "description": "GABA Red TeaMur",
+      "tea_type": "oolongGaba",
+      "price": 12.31,
+      "mark": 8.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Taiwan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 81,
+    "fields": {
+      "availability": true,
+      "name": "Да Хун Пао",
+      "place_of_purchase": "озон (TeaHunter)",
+      "description": "",
+      "tea_type": "oolongNF",
+      "price": 6.06,
+      "mark": 8.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 82,
+    "fields": {
+      "availability": true,
+      "name": "Синьян Маоцзянь",
+      "place_of_purchase": "озон (leaves)",
+      "description": "",
+      "tea_type": "green",
+      "price": 2.72,
+      "mark": 7.0,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 83,
+    "fields": {
+      "availability": true,
+      "name": "У И Жоу Гуй",
+      "place_of_purchase": "озон (WOW!ЧАЙ!)",
+      "description": "",
+      "tea_type": "oolongNF",
+      "price": 10.03,
+      "mark": 8.7,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 84,
+    "fields": {
+      "availability": true,
+      "name": "Да Хун Пао Тяньфу",
+      "place_of_purchase": "озон (TeaYunMen)",
+      "description": "",
+      "tea_type": "oolongNF",
+      "price": 4.04,
+      "mark": 7.9,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 85,
+    "fields": {
+      "availability": true,
+      "name": "Те Гуфнь Инь",
+      "place_of_purchase": "озон (Magger)",
+      "description": "",
+      "tea_type": "oolongSF",
+      "price": 7.6,
+      "mark": 6.9,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 86,
+    "fields": {
+      "availability": true,
+      "name": "Габа-белый хейча",
+      "place_of_purchase": "озон (Горьков Чай)",
+      "description": "",
+      "tea_type": "black",
+      "price": 11.67,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 87,
+    "fields": {
+      "availability": true,
+      "name": "Красный-шу хейча",
+      "place_of_purchase": "озон (Горьков Чай)",
+      "description": "",
+      "tea_type": "black",
+      "price": 8.75,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 88,
+    "fields": {
+      "availability": true,
+      "name": "Юн Фа Бин Дао 2012",
+      "place_of_purchase": "озон (TeaMur)",
+      "description": "",
+      "tea_type": "puerSHU",
+      "price": 4.0,
+      "mark": null,
+      "year_of_harvest": 2012,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 89,
+    "fields": {
+      "availability": true,
+      "name": "Каа 2013",
+      "place_of_purchase": "Art of Tea",
+      "description": "",
+      "tea_type": "puerSHU",
+      "price": 7.6,
+      "mark": null,
+      "year_of_harvest": 2013,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 90,
+    "fields": {
+      "availability": true,
+      "name": "Фен Хуан дан Цун",
+      "place_of_purchase": "озон (TeaYunMen)",
+      "description": "",
+      "tea_type": "oolongGD",
+      "price": 4.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "Guangdong",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 91,
+    "fields": {
+      "availability": true,
+      "name": "Тайпин Хоу Куй",
+      "place_of_purchase": "озон (TeaYunMen)",
+      "description": "",
+      "tea_type": "green",
+      "price": 6.75,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 92,
+    "fields": {
+      "availability": true,
+      "name": "Чжэн Шань Сяочжун",
+      "place_of_purchase": "Шанхай, 1этаж 1 женщина",
+      "description": "",
+      "tea_type": "red",
+      "price": 4.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 93,
+    "fields": {
+      "availability": true,
+      "name": "Бай Му Дань",
+      "place_of_purchase": "Шанхай, 1этаж перед выходом",
+      "description": "",
+      "tea_type": "white",
+      "price": 6.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 94,
+    "fields": {
+      "availability": true,
+      "name": "Те Гуань Инь Домашний",
+      "place_of_purchase": "Шанхай, 1этаж 1 женщина",
+      "description": "",
+      "tea_type": "oolongSF",
+      "price": 12.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 95,
+    "fields": {
+      "availability": true,
+      "name": "???",
+      "place_of_purchase": "Шанхай, 2этаж, где чайник",
+      "description": "цена правильная)",
+      "tea_type": "puerSHEN",
+      "price": 144.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 96,
+    "fields": {
+      "availability": true,
+      "name": "Те Гуань Инь",
+      "place_of_purchase": "Шанхай, 1этаж 1 женщина",
+      "description": "",
+      "tea_type": "oolongSF",
+      "price": 0.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 97,
+    "fields": {
+      "availability": true,
+      "name": "Хуа Сян Жоу Гуй",
+      "place_of_purchase": "Шанхай, 1этаж перед выходом",
+      "description": "",
+      "tea_type": "oolongNF",
+      "price": 0.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "Fujian",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 98,
+    "fields": {
+      "availability": true,
+      "name": "Сяо чжун \"сахарный\"",
+      "place_of_purchase": "Чайная карта",
+      "description": "запах пареной свелы и картофельной кажуры",
+      "tea_type": "red",
+      "price": 11.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 99,
+    "fields": {
+      "availability": true,
+      "name": "Сяо чжун из Тун Му",
+      "place_of_purchase": "Чайная карта",
+      "description": "",
+      "tea_type": "red",
+      "price": 13.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "China",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 100,
+    "fields": {
+      "availability": true,
+      "name": "???",
+      "place_of_purchase": "Чайная карта",
+      "description": "",
+      "tea_type": "puerSHEN",
+      "price": 20.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "Yunnan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  },
+  {
+    "model": "Catalog.Tea",
+    "pk": 101,
+    "fields": {
+      "availability": true,
+      "name": "Лишань",
+      "place_of_purchase": "Чайная карта",
+      "description": "",
+      "tea_type": "oolongTW",
+      "price": 31.0,
+      "mark": null,
+      "year_of_harvest": null,
+      "place_of_harvest": "Taiwan",
+      "created_at": "2026-10-13T20:56:48.140366Z"
+    }
+  }
+]
