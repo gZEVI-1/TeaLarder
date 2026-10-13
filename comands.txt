@@ -1,0 +1,21 @@
+python manage.py 
+
+python manage.py makemigrations 
+python manage.py makemigrations Catalog
+
+python manage.py migrate
+python manage.py migrate Catalog
+
+python manage.py sqlmigrate
+
+python manage.py showmigrations Catalog
+
+
+python manage.py shell
+
+python manage.py runserver
+
+python manage.py createsuperuser
+
+//для удаления с гита
+git rm --cached db.sqlite3
