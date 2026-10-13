@@ -189,3 +189,7 @@ db.sqlite3
 *.sqlite3
 __pycache__/
 *.pyc
+Parser/parser_gpt.py
+Parser/parser_kimi.py
+Parser/teas_gpt.json
+Parser/teas_kimi.json
