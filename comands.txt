@@ -19,3 +19,6 @@ python manage.py createsuperuser
 
 //для удаления с гита
 git rm --cached db.sqlite3
+
+
+python manage.py check

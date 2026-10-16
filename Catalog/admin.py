@@ -21,7 +21,7 @@ class TeaAdmin(admin.ModelAdmin):
     search_fields = ('id','availability', 'tea_type','name', 'price','description')
 
     list_filter = ('availability', 'tea_type',
-                     'place_of_purchase', 'place_of_harvest','year_of_harvest','name')
+                      'place_of_harvest','year_of_harvest','place_of_purchase','name')
     readonly_fields = ('created_at', 'updated_at')
     ordering = ('-created_at',)
     save_on_top = True
