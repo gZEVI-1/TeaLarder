@@ -1,0 +1,54 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static admin_urls %}
+
+{% block title %}{{ title|default:_('Change creation date') }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static "admin/css/forms.css" %}">
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+	<a href="{% url 'admin:index' %}">{% translate "Home" %}</a>
+	{% if opts %}
+		&rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+		{% if original %}
+			&rsaquo; <a href="{% url opts|admin_urlname:'change' original.pk|admin_urlquote %}">{{ original|truncatewords:"18" }}</a>
+		{% endif %}
+	{% endif %}
+	&rsaquo; {{ title|default:_('Change creation date') }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+	<form method="post" novalidate>
+		{% csrf_token %}
+		<input type="hidden" name="action" value="{{ action_name }}">
+		{% if form.non_field_errors %}<p class="errornote">{{ form.non_field_errors }}</p>{% endif %}
+		<fieldset class="module aligned">
+			{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+			<div class="form-row{% if form.year.errors or form.month.errors or form.day.errors %} errors{% endif %}">
+				<div>
+					<label>Дата:</label>
+					{{ form.year }}&nbsp;{{ form.month }}&nbsp;{{ form.day }}
+					&nbsp;<span class="help">год · месяц · день</span>
+					{{ form.year.errors }}{{ form.month.errors }}{{ form.day.errors }}
+				</div>
+			</div>
+			<div class="form-row{% if form.hour.errors or form.minute.errors %} errors{% endif %}">
+				<div>
+					<label>Время:</label>
+					{{ form.hour }}&nbsp;:&nbsp;{{ form.minute }}
+					&nbsp;<span class="help">часы · минуты (по умолчанию 00:00)</span>
+					{{ form.hour.errors }}{{ form.minute.errors }}
+				</div>
+			</div>
+		</fieldset>
+		<div class="submit-row">
+			<input type="submit" name="apply" value="{% translate 'Save' %}" class="default">
+			{% if cancel_url %}<a href="{{ cancel_url }}" class="closelink">{% translate "Cancel" %}</a>{% endif %}
+		</div>
+	</form>
+</div>
+{% endblock %}
