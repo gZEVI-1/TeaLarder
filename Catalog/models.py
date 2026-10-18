@@ -82,6 +82,11 @@ class Tea(models.Model):
     def __str__(self):
         return f"{self.id} - {self.availability} - {self.tea_type} - {self.name} - {self.place_of_purchase} - {self.year_of_harvest} - {self.price}"
 
+    def is_available(self):
+        return self.availability
+
+    def get_created_at(self):
+        return self.created_at
     # def make_available(self):
     #     self.availability = True
     #     self.save()
