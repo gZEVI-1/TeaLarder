@@ -15,15 +15,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.db import router
+from django.urls import include, path
 
 
 from django.conf import settings
 from django.conf.urls.static import static
 
+import Catalog.views as catalog_views
+from rest_framework.routers import DefaultRouter
+router = DefaultRouter()
+router.register(r'teas', catalog_views.TeaViewSet ,basename='tea')
+
 urlpatterns = [
+
     path('admin/', admin.site.urls),
-    # позже сюда api и веб-маршруты
+    path('api/', include(router.urls)),
+    
 ]
 
 if settings.DEBUG:
