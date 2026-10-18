@@ -1,3 +1,5 @@
+
+
 from django.contrib import admin
 
 from Catalog.models import Tea, TeaImage
@@ -5,7 +7,8 @@ from Catalog.models import Tea, TeaImage
 # Register your models here.
 
 # admin.site.register(Tea)
-
+from django.utils import timezone
+from datetime import timedelta
 class TeaImageInline(admin.TabularInline):
     model = TeaImage
     extra = 1
@@ -26,7 +29,7 @@ class TeaAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
     save_on_top = True
 
-    actions = ['make_available', 'make_unavailable', 'delete_selected']
+    actions = ['make_available', 'make_unavailable', 'mark_as_new', 'mark_as_old', 'copy_selected', 'copy_selected_with_images', 'copy_and_mark_as_new', 'delete_selected', 'delete_selected_with_images']
     @admin.action(description='Make available')
     def make_available(self, request, queryset):
         queryset.update(availability=True)
@@ -35,3 +38,47 @@ class TeaAdmin(admin.ModelAdmin):
     def make_unavailable(self, request, queryset):
         queryset.update(availability=False)
 
+    @admin.action(description='Delete selected')
+    def delete_selected(self, request, queryset):
+        queryset.delete()
+
+    @admin.action(description='Mark as new')
+    def mark_as_new(self, request, queryset):
+        queryset.update(created_at=timezone.now())
+
+    @admin.action(description='Mark as old')
+    def mark_as_old(self, request, queryset):
+        queryset.update(created_at=timezone.now() - timedelta(days=91))
+
+    @admin.action(description='Copy selected')
+    def copy_selected(self, request, queryset):
+        for tea in queryset:
+            tea.pk = None
+            tea.save()
+
+    @admin.action(description='Copy selected with images')
+    def copy_selected_with_images(self, request, queryset):
+        for tea in queryset:
+            images = tea.images.all()
+            tea.pk = None
+            tea.save()
+            for image in images:
+                image.pk = None
+                image.tea = tea
+                image.save()
+
+    @admin.action(description='Copy and mark as new')
+    def copy_and_mark_as_new(self, request, queryset):
+        for tea in queryset:
+            tea.pk = None
+            tea.save()
+
+    @admin.action(description='Delete selected with images')
+    def delete_selected_with_images(self, request, queryset):
+        for tea in queryset:
+            images = tea.images.all()
+            for image in images:
+                image.delete()
+            tea.delete()
+
+    
