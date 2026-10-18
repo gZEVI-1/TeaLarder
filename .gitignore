@@ -193,3 +193,4 @@ Parser/parser_gpt.py
 Parser/parser_kimi.py
 Parser/teas_gpt.json
 Parser/teas_kimi.json
+tester.py
