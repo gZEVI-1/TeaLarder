@@ -7,12 +7,12 @@ from django.template.response import TemplateResponse
 from Catalog.models import Tea, TeaImage
 from django.utils import timezone
 from datetime import datetime, timedelta
+from django import forms
 
 class TeaImageInline(admin.TabularInline):
     model = TeaImage
     extra = 1
     readonly_fields = ('created_at', 'updated_at')
-
 class InputFilter(admin.SimpleListFilter):
     title = 'Input Filter'
     parameter_name = 'input_filter'
@@ -32,11 +32,6 @@ class InputFilter(admin.SimpleListFilter):
             return queryset.filter(availability=True, created_at__lt=timezone.now() - timedelta(days=90))
         elif self.value() == 'no_harvest_date': # без даты сбора
             return queryset.filter(year_of_harvest__isnull=True)
-
-
-from django import forms
-
-
 class ChangeCreationDateForm(forms.Form):
     year = forms.IntegerField(
         label="Год", min_value=1900, max_value=2100,
@@ -74,12 +69,9 @@ class ChangeCreationDateForm(forms.Form):
             raise forms.ValidationError(f"Некорректная дата: {exc}.") from exc
         cleaned["new_created_at"] = timezone.make_aware(naive)
         return cleaned
-
-
-
 @admin.register(Tea)
 class TeaAdmin(admin.ModelAdmin):
-
+#------------------LIST DISPLAY-------------------
     list_display = ('id', 'availability', 'tea_type', 'name', 
                     'place_of_purchase', 'price', 'mark', 'photo', 'place_of_harvest', 'year_of_harvest',
                     'created_at','updated_at')
@@ -97,17 +89,17 @@ class TeaAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
     save_on_top = True
 
-    actions = ['make_available', 'make_unavailable', 'mark_as_new', 'mark_as_old','set_year_created_at','change_creation_date',
+    actions = ['make_available', 'make_unavailable', 'mark_as_new', 'mark_as_old','set_year_of_harvest','set_year_created_at','change_creation_date',
                 'copy_selected', 'copy_selected_with_images', 'copy_and_mark_as_new', 'delete_selected', 'delete_selected_with_images']
+#----------------ACTIONS-------------------
+
     @admin.action(description='Make available')
     def make_available(self, request, queryset):
         queryset.update(availability=True)
 
     @admin.action(description='Make unavailable')
     def make_unavailable(self, request, queryset):
-        queryset.update(availability=False)
-
-    
+        queryset.update(availability=False)  
 
     @admin.action(description='Mark as new')
     def mark_as_new(self, request, queryset):
@@ -117,11 +109,16 @@ class TeaAdmin(admin.ModelAdmin):
     def mark_as_old(self, request, queryset):
         queryset.update(created_at=timezone.now() - timedelta(days=91))
 
-
-    @admin.action(description='Set creation date like year of harvest')
+    @admin.action(description='creation date <= year of harvest')
     def set_year_created_at(self, request, queryset):
         for tea in queryset:
             tea.created_at = tea.created_at.replace(year=tea.year_of_harvest)
+            tea.save()
+
+    @admin.action(description='creation date => year of harvest')
+    def set_year_of_harvest(self, request, queryset):
+        for tea in queryset:
+            tea.year_of_harvest = tea.created_at.year
             tea.save()
 
     @admin.action(description='Change creation date on any')
