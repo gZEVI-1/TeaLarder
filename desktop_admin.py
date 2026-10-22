@@ -1,4 +1,9 @@
-"""
+"""Карточный десктоп-клиент «Чайного учёта» (наработка для клиентской части).
+
+Административный интерфейс с таблицей живёт в desktop_table.py;
+этот модуль остаётся как карточная витрина и источник общего
+транспортного слоя (TeaApi, ApiError, PageResult).
+
 Запуск: .venv\\Scripts\\python.exe desktop_admin.py
 """
 import io
@@ -10,11 +15,12 @@ import threading
 import time
 import tkinter as tk
 from collections import OrderedDict
+from dataclasses import dataclass
 from functools import lru_cache
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import parse_qs, urljoin, urlparse
 
 import customtkinter as ctk
 import requests
@@ -25,7 +31,6 @@ APP_TITLE = "Чайная Лавка"
 BASE_URL = "http://127.0.0.1:8000"
 API_TEAS_URL = f"{BASE_URL}/api/teas/"
 REQUEST_TIMEOUT = 10.0
-FETCH_PAGE_SIZE = 500
 ENV_PATH = Path(__file__).resolve().parent / ".env"
 
 FONT = "Segoe UI"
@@ -166,60 +171,272 @@ class LoadError(RuntimeError):
     """Ошибка загрузки с сообщением, готовым для статус-строки."""
 
 
-def _http_error_message(status: int) -> str:
-    if status == 401:
-        return "Ошибка авторизации (401)"
-    if status == 403:
-        return "Доступ запрещён (403)"
-    if status == 404:
-        return "Не найден (404)"
-    return f"HTTP {status}"
+@dataclass(frozen=True)
+class PageResult:
+    """Одна страница /api/teas/ вместе с метаданными пагинации."""
+
+    items: list[dict]
+    count: int
+    next_page: int | None = None
+    previous_page: int | None = None
+
+
+class ApiError(RuntimeError):
+    """Единая ошибка транспортного слоя.
+
+    status — HTTP-код или None для сетевой ошибки;
+    field_errors — ошибки валидации DRF в виде {"поле": ["сообщение"]};
+    payload — сырое тело ответа, нужно только для отладки.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        status: int | None = None,
+        field_errors: dict[str, list[str]] | None = None,
+        payload: dict | list | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.message = message
+        self.status = status
+        self.field_errors = field_errors or {}
+        self.payload = payload
+
+
+def _page_from_url(url: str | None) -> int | None:
+    """Достаёт номер страницы из абсолютного URL вида ...?page=2."""
+    if not url:
+        return None
+    values = parse_qs(urlparse(url).query).get("page")
+    if not values:
+        return None
+    try:
+        return int(values[0])
+    except (TypeError, ValueError):
+        return None
+
+
+class TeaApi:
+    """HTTP-слой над /api/teas/: CRUD, выборки и разбор ошибок DRF.
+
+    Не знает ничего о Tkinter. Любую неудачу приводит к ApiError,
+    чтобы вызывающий код обрабатывал ровно один тип исключения.
+    """
+
+    def __init__(
+        self,
+        session: requests.Session,
+        base_url: str = API_TEAS_URL,
+        timeout: float = REQUEST_TIMEOUT,
+    ) -> None:
+        self.session = session
+        self.base_url = base_url.rstrip("/") + "/"
+        self.timeout = timeout
+
+    # ---------- HTTP ----------
+
+    def _url(self, tea_id: int | None = None) -> str:
+        if tea_id is None:
+            return self.base_url
+        return f"{self.base_url}{tea_id}/"
+
+    def _decode(self, response: requests.Response) -> dict | list | None:
+        """JSON или None. 204 и HTML-страницы ошибок не должны ронять клиента."""
+        if not response.content:
+            return None
+        try:
+            return response.json()
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _field_errors(data: dict) -> dict[str, list[str]]:
+        """Нормализует ответ 400 DRF: {"поле": ["текст"]}."""
+        errors: dict[str, list[str]] = {}
+        for key, value in data.items():
+            if key == "detail":
+                continue
+            errors[key] = (
+                [str(item) for item in value]
+                if isinstance(value, list)
+                else [str(value)]
+            )
+        return errors
+
+    def _build_error(
+        self,
+        response: requests.Response,
+        data: dict | list | None,
+    ) -> ApiError:
+        status = response.status_code
+        field_errors = self._field_errors(data) if isinstance(data, dict) else {}
+        detail = data.get("detail") if isinstance(data, dict) else None
+
+        if status == 400:
+            message = "Сервер отклонил данные: проверьте поля."
+        elif status == 401:
+            message = "Ошибка авторизации (401). Проверьте логин и пароль."
+        elif status == 403:
+            message = "Доступ запрещён (403). Проверьте логин и пароль."
+        elif status == 404:
+            message = "Запись не найдена (404)."
+        elif status == 405:
+            message = "Метод не поддерживается сервером (405)."
+        elif status >= 500:
+            message = f"Ошибка сервера (HTTP {status})."
+        else:
+            message = f"Неожиданный ответ сервера (HTTP {status})."
+
+        if detail:
+            message = f"{message} Сервер: {detail}"
+
+        return ApiError(
+            message,
+            status=status,
+            field_errors=field_errors,
+            payload=data,
+        )
+
+    def _request(self, method: str, url: str, **kwargs) -> dict | list | None:
+        """Единственное место, где выполняются HTTP-запросы."""
+        try:
+            response = self.session.request(
+                method,
+                url,
+                timeout=self.timeout,
+                **kwargs,
+            )
+        except requests.exceptions.Timeout as exc:
+            raise ApiError(f"Сервер не ответил за {self.timeout:g} с") from exc
+        except requests.exceptions.ConnectionError as exc:
+            raise ApiError(f"Сервер недоступен: {self.base_url}") from exc
+        except requests.exceptions.RequestException as exc:
+            raise ApiError(f"Ошибка запроса: {exc}") from exc
+
+        if response.status_code == 204:
+            return None
+
+        data = self._decode(response)
+
+        if 200 <= response.status_code < 300:
+            if data is None and response.content:
+                raise ApiError(
+                    "Ответ сервера не является JSON.",
+                    status=response.status_code,
+                )
+            return data
+
+        raise self._build_error(response, data)
+
+    @staticmethod
+    def _as_object(data: dict | list | None, what: str) -> dict:
+        if not isinstance(data, dict):
+            raise ApiError(f"Сервер вернул не объект {what}.", payload=data)
+        return data
+
+    # ---------- CRUD ----------
+
+    def list_teas(self, page: int = 1, page_size: int | None = None) -> PageResult:
+        params: dict[str, int] = {"page": page}
+        if page_size is not None:
+            # Catalog.pagination.TeaPagination ограничивает размер 500.
+            params["page_size"] = page_size
+        data = self._request("GET", self.base_url, params=params)
+        if isinstance(data, list):  # пагинацию могут отключить на сервере
+            return PageResult(items=data, count=len(data))
+        if not isinstance(data, dict):
+            raise ApiError("Неожиданный формат ответа списка.", payload=data)
+        if "results" not in data and "count" not in data:
+            # Похоже, URL указывает не на коллекцию (например, на API-root).
+            raise ApiError("Ответ не похож на страницу списка.", payload=data)
+        results = data.get("results")
+        items = results if isinstance(results, list) else []
+        count = data.get("count")
+        return PageResult(
+            items=items,
+            count=count if isinstance(count, int) else len(items),
+            next_page=_page_from_url(data.get("next")),
+            previous_page=_page_from_url(data.get("previous")),
+        )
+
+    def get_tea(self, tea_id: int) -> dict:
+        data = self._request("GET", self._url(tea_id))
+        return self._as_object(data, "сорта")
+
+    def create_tea(self, payload: dict) -> dict:
+        data = self._request("POST", self.base_url, json=payload)
+        return self._as_object(data, "созданного сорта")
+
+    def update_tea(
+        self,
+        tea_id: int,
+        payload: dict,
+        *,
+        partial: bool = True,
+    ) -> dict:
+        method = "PATCH" if partial else "PUT"
+        data = self._request(method, self._url(tea_id), json=payload)
+        return self._as_object(data, "обновлённого сорта")
+
+    def delete_tea(self, tea_id: int) -> None:
+        self._request("DELETE", self._url(tea_id))
+
+    # ---------- выборки (@action) ----------
+
+    def _list_action(self, name: str) -> list[dict]:
+        data = self._request("GET", f"{self.base_url}{name}/")
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict) and isinstance(data.get("results"), list):
+            return data["results"]
+        raise ApiError(
+            f"Неожиданный формат ответа выборки «{name}».",
+            payload=data,
+        )
+
+    def list_available(self) -> list[dict]:
+        return self._list_action("available")
+
+    def list_unavailable(self) -> list[dict]:
+        return self._list_action("unavailable")
+
+    def list_new(self) -> list[dict]:
+        return self._list_action("new")
+
+    def list_available_old(self) -> list[dict]:
+        return self._list_action("available_old")
 
 
 def fetch_teas_stream(
     session: requests.Session,
-    page_size: int = FETCH_PAGE_SIZE,
     timeout: float = REQUEST_TIMEOUT,
 ):
-    """Отдаёт пары (items, total) по мере поступления страниц /api/teas/."""
-    url = f"{API_TEAS_URL}?page_size={page_size}"
-    loaded = 0
+    """Отдаёт пары (items, total) по мере поступления страниц /api/teas/.
 
-    while url:
+    Карточная версия идёт страницами по умолчанию (20): ей важна
+    прогрессивная отрисовка. Админ-таблица забирает каталог одним
+    запросом с page_size=500 (см. desktop_table.fetch_all).
+    """
+    api = TeaApi(session, timeout=timeout)
+    page_number = 1
+
+    while True:
         try:
-            response = session.get(url, timeout=timeout)
-        except requests.exceptions.Timeout as exc:
-            raise LoadError(f"Сервер не ответил за {timeout} с") from exc
-        except requests.exceptions.ConnectionError as exc:
-            raise LoadError(f"Сервер недоступен: {BASE_URL}") from exc
-        except requests.exceptions.RequestException as exc:
-            raise LoadError(f"Ошибка запроса: {exc}") from exc
+            page = api.list_teas(page_number)
+        except ApiError as exc:
+            raise LoadError(exc.message) from exc
 
-        if response.status_code != 200:
-            raise LoadError(_http_error_message(response.status_code))
-
-        try:
-            data = response.json()
-        except ValueError as exc:
-            raise LoadError("Ошибка JSON") from exc
-
-        if isinstance(data, list):
-            yield data, len(data)
+        if not page.items:
             return
-        if not isinstance(data, dict):
-            raise LoadError("Неожиданный формат ответа")
 
-        results = data.get("results")
-        if not isinstance(results, list):
-            results = []
-        total = data.get("count")
-        if not isinstance(total, int):
-            total = loaded + len(results)
-        loaded += len(results)
-        yield results, total
+        yield page.items, page.count
 
-        next_url = data.get("next")
-        url = urljoin(BASE_URL + "/", next_url) if next_url else None
+        if page.next_page is None:
+            return
+        if page.next_page == page_number:
+            raise LoadError("Сервер вернул ссылку на ту же страницу.")
+        page_number = page.next_page
 
 
 def media_url(value: str | None) -> str | None:
