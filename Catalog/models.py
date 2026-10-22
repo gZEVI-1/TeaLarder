@@ -79,6 +79,11 @@ class Tea(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
 
+    class Meta:
+        # Стабильный порядок обязателен для постраничной выдачи: без него
+        # между запросами строки могут повторяться или теряться.
+        ordering = ['id']
+
     def __str__(self):
         return f"{self.id} - {self.availability} - {self.tea_type} - {self.name} - {self.place_of_purchase} - {self.year_of_harvest} - {self.price}"
 
@@ -104,6 +109,3 @@ class TeaImage(models.Model):
     
     def __str__(self):
         return f"Image for {self.tea.name} - {self.created_at}"
-
-class Meta:
-    ordering = ['-created_at']
