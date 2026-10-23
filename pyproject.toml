@@ -5,7 +5,7 @@ description = "Чайный учёт"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "Django>=4.2",
+    "Django>=6.1",
     "djangorestframework>=3.14",
     "django-cors-headers>=4.0",
     "Pillow>=12.0",
@@ -13,6 +13,8 @@ dependencies = [
     "requests>=2.31",
     "python-dotenv",
 ]
+[tool.setuptools]
+packages=["tea_larder"]
 
 [build-system]
 requires = ["setuptools>=61.0"]
