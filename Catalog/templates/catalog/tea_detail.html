@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ tea.name }}</title>
+</head>
+<body>
+  <p><a href="{% url 'index' %}">← Назад к каталогу</a></p>
+
+  <h1>{{ tea.name }}</h1>
+
+  <p>
+    {{ tea.get_tea_type_display }}
+    {% if tea.get_place_of_harvest_display %}· {{ tea.get_place_of_harvest_display }}{% endif %}
+    {% if tea.year_of_harvest %}· {{ tea.year_of_harvest }}{% endif %}
+  </p>
+
+  <p>Место покупки: {{ tea.place_of_purchase }}</p>
+  <p>Наличие: {% if tea.availability %}да{% else %}нет{% endif %}</p>
+
+  {% if tea.description %}
+    <div>{{ tea.description|linebreaks }}</div>
+  {% endif %}
+</body>
+</html>

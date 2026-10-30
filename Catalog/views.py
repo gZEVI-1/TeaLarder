@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -62,6 +62,18 @@ class TeaImageViewSet(viewsets.ModelViewSet):
         except (TypeError, ValueError):
             return queryset.none()
         return queryset.filter(tea_id=tea_id)
+
+
+def index_view(request):
+    """Витрина: список сортов."""
+    teas = Tea.objects.all()
+    return render(request, "catalog/index.html", {"teas": teas})
+
+
+def detail_view(request, pk):
+    """Витрина: детальная страница сорта."""
+    tea = get_object_or_404(Tea, pk=pk)
+    return render(request, "catalog/tea_detail.html", {"tea": tea})
     
     
 

@@ -30,10 +30,13 @@ router.register(r'tea-images', catalog_views.TeaImageViewSet, basename='tea-imag
 
 urlpatterns = [
 
+    path('', catalog_views.index_view, name='index'),
+    path('tea/<int:pk>/', catalog_views.detail_view, name='detail'),
+
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(router.urls)),
-    
+
 ]
 
 if settings.DEBUG:

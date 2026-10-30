@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Каталог чая</title>
+</head>
+<body>
+  <h1>Каталог чая</h1>
+  <p>Сортов: {{ teas|length }}</p>
+
+  <ul>
+    {% for tea in teas %}
+      <li>
+        <a href="{% url 'detail' tea.pk %}">{{ tea.name }}</a>
+        — {{ tea.get_tea_type_display }}
+        {% if tea.get_place_of_harvest_display %}· {{ tea.get_place_of_harvest_display }}{% endif %}
+      </li>
+    {% empty %}
+      <li>Каталог пуст.</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
