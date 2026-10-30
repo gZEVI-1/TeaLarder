@@ -1,6 +1,8 @@
 from decimal import Decimal
 
-from django.db import models
+from django.db import models, transaction
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
@@ -109,3 +111,40 @@ class TeaImage(models.Model):
     
     def __str__(self):
         return f"Image for {self.tea.name} - {self.created_at}"
+
+
+# ---------------------------------------------------------------------------
+# Удаление файлов вместе с записями
+# ---------------------------------------------------------------------------
+#
+# Django не удаляет файлы ImageField/FileField при удалении модели: каскад
+# работает только в базе. Без этих сигналов после DELETE в media/ остаются
+# «осиротевшие» photo и изображения галереи.
+#
+# on_commit — потому что файл нельзя вернуть, если транзакция откатится.
+
+
+def _delete_file_on_commit(field_file) -> None:
+    if not field_file:
+        return
+    storage = field_file.storage
+    name = field_file.name
+
+    def _remove() -> None:
+        try:
+            storage.delete(name)
+        except Exception:
+            # Удаление файла не должно ломать удаление записи.
+            pass
+
+    transaction.on_commit(_remove)
+
+
+@receiver(post_delete, sender=TeaImage)
+def _delete_gallery_image_file(sender, instance, **kwargs):
+    _delete_file_on_commit(instance.image)
+
+
+@receiver(post_delete, sender=Tea)
+def _delete_tea_photo_file(sender, instance, **kwargs):
+    _delete_file_on_commit(instance.photo)

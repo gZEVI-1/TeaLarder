@@ -26,6 +26,7 @@ import Catalog.views as catalog_views
 from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register(r'teas', catalog_views.TeaViewSet ,basename='tea')
+router.register(r'tea-images', catalog_views.TeaImageViewSet, basename='tea-image')
 
 urlpatterns = [
 

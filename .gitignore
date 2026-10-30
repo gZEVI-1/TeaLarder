@@ -196,3 +196,6 @@ Parser/teas_kimi.json
 tester.py
 /docs/new
 /docs/old
+
+# Одноразовые локальные скрипты проверки и runtime-состояние
+/state/

@@ -9,6 +9,7 @@
 import io
 import logging
 import math
+import mimetypes
 import os
 import queue
 import threading
@@ -25,11 +26,12 @@ from urllib.parse import parse_qs, urljoin, urlparse
 import customtkinter as ctk
 import requests
 from dotenv import load_dotenv
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageTk
 
 APP_TITLE = "Чайная Лавка"
 BASE_URL = "http://127.0.0.1:8000"
 API_TEAS_URL = f"{BASE_URL}/api/teas/"
+API_IMAGES_URL = f"{BASE_URL}/api/tea-images/"
 REQUEST_TIMEOUT = 10.0
 ENV_PATH = Path(__file__).resolve().parent / ".env"
 
@@ -74,14 +76,24 @@ DETAIL_PHOTO_RADIUS = 16
 RESIZE_DEBOUNCE_MS = 150
 SEARCH_DEBOUNCE_MS = 250
 WHEEL_DEBOUNCE_MS = 120
-LOAD_RENDER_DEBOUNCE_MS = 150
-RENDER_BUDGET_MS = 50
+RENDER_BUDGET_MS = 24
+# after_idle не отдаёт управление циклу событий: цепочка порций выполнялась
+# целиком внутри одного update() и окно замирало на секунды. after(1) даёт
+# Tk обработать перерисовку между порциями.
+RENDER_YIELD_MS = 1
 UI_DRAIN_MS = 16
 
 RAW_PHOTO_SIZE = (640, 640)
 RAW_PHOTO_CACHE_LIMIT = 48
 PREPARED_CACHE_LIMIT = 160
 IMAGE_CACHE_LIMIT = 120
+# PhotoImage для нативных canvas'ов карточек: ~200×130 RGBA на запись.
+NATIVE_IMAGE_CACHE_LIMIT = 160
+
+# Карточная витрина грузит каталог прогрессивно. 20 записей на страницу —
+# это слишком много round-trip'ов: 2000 сортов = 100 последовательных
+# запросов. 100 записей всё ещё быстро отдаются и в 5 раз сокращают сеть.
+STREAM_PAGE_SIZE = 100
 
 LOGGER = logging.getLogger("desktop_admin")
 _MISSING = object()
@@ -364,9 +376,33 @@ class TeaApi:
         data = self._request("GET", self._url(tea_id))
         return self._as_object(data, "сорта")
 
-    def create_tea(self, payload: dict) -> dict:
-        data = self._request("POST", self.base_url, json=payload)
-        return self._as_object(data, "созданного сорта")
+    @staticmethod
+    def _form_value(value) -> str:
+        """Значение для multipart/form-data: bool DRF ждёт как true/false."""
+        if value is True:
+            return "true"
+        if value is False:
+            return "false"
+        if value is None:
+            return ""
+        return str(value)
+
+    def create_tea(self, payload: dict, *, files: dict | None = None) -> dict:
+        """POST /api/teas/.
+
+        Без ``files`` уходит JSON. С ``files`` — multipart/form-data:
+        так загружается ``photo`` вместе с остальными полями.
+        """
+        if files:
+            data = {
+                key: self._form_value(value) for key, value in payload.items()
+            }
+            result = self._request(
+                "POST", self.base_url, data=data, files=files
+            )
+        else:
+            result = self._request("POST", self.base_url, json=payload)
+        return self._as_object(result, "созданного сорта")
 
     def update_tea(
         self,
@@ -374,13 +410,94 @@ class TeaApi:
         payload: dict,
         *,
         partial: bool = True,
+        files: dict | None = None,
     ) -> dict:
+        """PATCH/PUT сорта; файлы уходят multipart/form-data.
+
+        ``photo`` заменяется только multipart-запросом; очистка — JSON
+        ``{"photo": null}`` (TeaSerializer объявляет allow_null=True).
+        """
         method = "PATCH" if partial else "PUT"
-        data = self._request(method, self._url(tea_id), json=payload)
-        return self._as_object(data, "обновлённого сорта")
+        if files:
+            data = {
+                key: self._form_value(value) for key, value in payload.items()
+            }
+            result = self._request(
+                method, self._url(tea_id), data=data, files=files
+            )
+        else:
+            result = self._request(method, self._url(tea_id), json=payload)
+        return self._as_object(result, "обновлённого сорта")
 
     def delete_tea(self, tea_id: int) -> None:
         self._request("DELETE", self._url(tea_id))
+
+    # ---------- галерея TeaImage ----------
+
+    def list_images(self, tea_id: int) -> list[dict]:
+        """GET /api/tea-images/?tea=<id> — галерея одного сорта."""
+        data = self._request(
+            "GET", API_IMAGES_URL, params={"tea": int(tea_id)}
+        )
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict) and isinstance(data.get("results"), list):
+            return data["results"]
+        raise ApiError("Неожиданный формат ответа галереи.", payload=data)
+
+    def create_image(self, tea_id: int, path: Path) -> dict:
+        """POST /api/tea-images/ (multipart: tea + image)."""
+        content_type = (
+            mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+        )
+        with path.open("rb") as handle:
+            files = {"image": (path.name, handle, content_type)}
+            result = self._request(
+                "POST",
+                API_IMAGES_URL,
+                data={"tea": str(int(tea_id))},
+                files=files,
+            )
+        return self._as_object(result, "изображения")
+
+    def create_image_bytes(
+        self,
+        tea_id: int,
+        filename: str,
+        content: bytes,
+        content_type: str | None = None,
+    ) -> dict:
+        """Создание изображения из уже скачанных байтов (копирование)."""
+        content_type = (
+            content_type or mimetypes.guess_type(filename)[0]
+            or "application/octet-stream"
+        )
+        files = {"image": (filename, content, content_type)}
+        result = self._request(
+            "POST",
+            API_IMAGES_URL,
+            data={"tea": str(int(tea_id))},
+            files=files,
+        )
+        return self._as_object(result, "изображения")
+
+    def delete_image(self, image_id: int) -> None:
+        self._request("DELETE", f"{API_IMAGES_URL}{int(image_id)}/")
+
+    def fetch_media(self, url: str) -> bytes:
+        """Скачивает изображение по URL (для копирования/превью)."""
+        try:
+            response = self.session.get(url, timeout=self.timeout)
+        except requests.exceptions.Timeout as exc:
+            raise ApiError(f"Изображение не загрузилось за {self.timeout:g} с") from exc
+        except requests.exceptions.RequestException as exc:
+            raise ApiError(f"Не удалось скачать изображение: {exc}") from exc
+        if response.status_code != 200:
+            raise ApiError(
+                f"Изображение недоступно (HTTP {response.status_code}).",
+                status=response.status_code,
+            )
+        return response.content
 
     # ---------- выборки (@action) ----------
 
@@ -414,16 +531,17 @@ def fetch_teas_stream(
 ):
     """Отдаёт пары (items, total) по мере поступления страниц /api/teas/.
 
-    Карточная версия идёт страницами по умолчанию (20): ей важна
-    прогрессивная отрисовка. Админ-таблица забирает каталог одним
-    запросом с page_size=500 (см. desktop_table.fetch_all).
+    Карточная версия идёт страницами по ``STREAM_PAGE_SIZE``: прогрессивная
+    отрисовка остаётся, но число сетевых round-trip'ов меньше. Админ-таблица
+    забирает каталог одним запросом с page_size=500 (см.
+    desktop_table.fetch_all).
     """
     api = TeaApi(session, timeout=timeout)
     page_number = 1
 
     while True:
         try:
-            page = api.list_teas(page_number)
+            page = api.list_teas(page_number, page_size=STREAM_PAGE_SIZE)
         except ApiError as exc:
             raise LoadError(exc.message) from exc
 
@@ -642,6 +760,7 @@ class TeaAdminApp(ctk.CTk):
         self._teas: list[dict] = []
         self._by_id: dict[str, dict] = {}
         self._order: list[str] = []
+        self._order_dirty = False
         self._sort_key: dict[str, tuple] = {}
         self._haystack: dict[str, str] = {}
         self._is_new: dict[str, bool] = {}
@@ -665,6 +784,7 @@ class TeaAdminApp(ctk.CTk):
         self._rendered_once = False
         self._placed_count = 0
         self._placing = False
+        self._placing_token = 0
         self._wheel_job = None
         self._loading_more = False
         self._shown = PAGE_SIZE
@@ -680,9 +800,16 @@ class TeaAdminApp(ctk.CTk):
         self._photo_pending: dict[tuple[str, int, int], list] = {}
         self._prepared: OrderedDict[tuple[str, int, int], Image.Image | None] = OrderedDict()
         self._image_cache: OrderedDict[tuple, ctk.CTkImage] = OrderedDict()
+        # То же, но в виде tk.PhotoImage для нативных canvas'ов карточек.
+        self._native_images: OrderedDict[tuple, ImageTk.PhotoImage] = OrderedDict()
+        # Подложки/заглушки/бейджи: их немного и они не должны вытесняться
+        # фотографиями из LRU-кэша.
+        self._static_images: dict[tuple, ImageTk.PhotoImage] = {}
         self._photo_queue: queue.Queue[tuple | None] = queue.Queue()
         self._photo_lock = threading.Lock()
         self._photo_epoch = 0
+        self._photo_visibility_job = None
+        self._photo_scan_retries = 0
         self._ui_queue: queue.SimpleQueue = queue.SimpleQueue()
         self._drain_job = None
         self._closing = False
@@ -832,15 +959,19 @@ class TeaAdminApp(ctk.CTk):
 
         self.scroll = ctk.CTkScrollableFrame(
             self,
-            fg_color="transparent",
+            fg_color=COLOR_BG,
             corner_radius=0,
             scrollbar_button_color=COLOR_SCROLL,
             scrollbar_button_hover_color=COLOR_SCROLL_HOVER,
         )
         self.scroll.grid(row=2, column=0, sticky="nsew", padx=(14, 8), pady=(0, 12))
         self.scroll.grid_columnconfigure(0, weight=1)
+        viewport = getattr(self.scroll, "_parent_canvas", None)
+        if viewport is not None:
+            viewport.bind("<Configure>", self._on_viewport_configure, add="+")
 
         self.bind("<Configure>", self._on_window_configure, add="+")
+        self.bind("<ButtonRelease-1>", lambda _event: self._schedule_visible_photos(80), add="+")
         self.bind("<F5>", lambda _event: self.refresh_status(), add="+")
         self.bind("<Control-f>", lambda _event: self.search_entry.focus_set(), add="+")
         self.bind_all("<MouseWheel>", self._on_mouse_wheel, add="+")
@@ -897,6 +1028,7 @@ class TeaAdminApp(ctk.CTk):
             self._teas.clear()
             self._by_id.clear()
             self._order.clear()
+            self._order_dirty = False
             self._haystack.clear()
             self._sort_key.clear()
             self._is_new.clear()
@@ -914,12 +1046,17 @@ class TeaAdminApp(ctk.CTk):
             added += 1
 
         if added:
-            self._rebuild_order()
+            # Сортировку не делаем на каждый батч: 20 страниц подряд — это
+            # 20 сортировок всего каталога в UI-потоке. Порядок нужен только
+            # к отрисовке, поэтому пересобираем его лениво.
+            self._order_dirty = True
 
         if first:
-            self._schedule_render(0)
-        elif added:
-            self._schedule_render(LOAD_RENDER_DEBOUNCE_MS)
+            # Первая страница показывается сразу. Дальше сетку не трогаем до
+            # конца загрузки: каждый батч менял сортировку, и каждые 250 мс
+            # заново строились те же 12 карточек. На 2000 сортов это давало
+            # десятки полных перерисовок и те самые «лагает и полосит».
+            self._schedule_render()
 
         self._set_status(
             f"Загрузка: {len(self._teas)} из {max(total, len(self._teas))}…",
@@ -930,6 +1067,12 @@ class TeaAdminApp(ctk.CTk):
         if token != self._load_token or self._closing:
             return
         self._set_busy(False)
+        if self._render_job is not None:
+            try:
+                self.after_cancel(self._render_job)
+            except tk.TclError:
+                pass
+            self._render_job = None
         self._render_cards(reset=not self._rendered_once)
         if not self._teas:
             return
@@ -950,6 +1093,9 @@ class TeaAdminApp(ctk.CTk):
                 f"{message}. Проверьте, что сервер запущен, и повторите попытку.",
                 error=True,
             )
+        else:
+            # Часть страниц успела прийти — показываем их, а не старую сетку.
+            self._render_cards(reset=not self._rendered_once)
 
     def _set_busy(self, busy: bool) -> None:
         self._busy = busy
@@ -1030,6 +1176,21 @@ class TeaAdminApp(ctk.CTk):
             except tk.TclError:
                 pass
 
+    def _hide_stale_cards(self, visible: set[str]) -> None:
+        """Убирает карточки, которых нет в новом наборе.
+
+        Иначе при смене сортировки во время загрузки старые карточки остаются
+        на тех же строках и новые ложатся поверх них — до финальной чистки
+        видно наложение и мигание.
+        """
+        for key, card in self._card_widgets.items():
+            if key in visible:
+                continue
+            try:
+                card.grid_remove()
+            except tk.TclError:
+                pass
+
     def _discard_cards(self) -> None:
         self._photo_epoch += 1
         self._clear_state()
@@ -1040,6 +1201,10 @@ class TeaAdminApp(ctk.CTk):
                 pass
         self._card_widgets.clear()
         self._card_parts.clear()
+        self._last_visible.clear()
+        self._placed_count = 0
+        self._placing = False
+        self._placing_token = self._render_token
         # Колбэки указывают на уничтоженные лейблы — держать их незачем.
         self._photo_pending.clear()
         self._card_width = 0
@@ -1060,8 +1225,33 @@ class TeaAdminApp(ctk.CTk):
             )
         self._columns = columns
 
+    def _viewport_width(self) -> int:
+        """Ширина видимой области прокрутки.
+
+        ``self.scroll`` — это внутренний фрейм CTkScrollableFrame. После
+        восстановления окна он может остаться шириной с maximized-состояния,
+        поэтому ориентироваться на него нельзя: карточки разложатся в 6
+        колонок в узком окне, и будет видно только 1–2. Canvas всегда знает
+        реальную ширину вьюпорта.
+        """
+        canvas = getattr(self.scroll, "_parent_canvas", None)
+        if canvas is not None:
+            try:
+                width = canvas.winfo_width()
+                if width > 1:
+                    return width
+            except tk.TclError:
+                pass
+        try:
+            width = self.scroll.winfo_width()
+        except tk.TclError:
+            width = 0
+        if width <= 1:
+            width = max(600, self.winfo_width() - 60)
+        return width
+
     def _grid_metrics(self) -> tuple[int, int]:
-        width = self.scroll.winfo_width()
+        width = self._viewport_width()
         if width < 200:
             width = max(600, self.winfo_width() - 60)
         width = max(300, width - 20)
@@ -1084,35 +1274,54 @@ class TeaAdminApp(ctk.CTk):
         for parts in self._card_parts.values():
             tea = parts["tea"]
             try:
-                parts["photo_frame"].configure(width=image_width, height=image_height)
+                canvas = parts["photo_canvas"]
+                canvas.configure(width=image_width, height=image_height)
+                canvas.itemconfigure(
+                    parts["photo_bg_item"],
+                    image=self._photo_background(image_width, image_height, CARD_PHOTO_RADIUS),
+                )
+                # Уже загруженное фото не подменяем заглушкой: новое приедет
+                # под тот же item, а до тех пор видно старое (разница ≤ шага).
+                if not parts.get("photo_shown"):
+                    canvas.itemconfigure(
+                        parts["photo_item"],
+                        image=self._photo_placeholder(image_width, image_height, CARD_PHOTO_RADIUS),
+                    )
                 parts["name_label"].configure(
                     text=shorten(tea.get("name"), name_limit),
-                    wraplength=wrap,
+                    wraplength=self._scaled_px(wrap),
                 )
                 parts["purchase_label"].configure(
                     text="Магазин: " + shorten(tea.get("place_of_purchase"), 30),
-                    wraplength=wrap,
+                    wraplength=self._scaled_px(wrap),
                 )
             except tk.TclError:
                 continue
 
-            url = media_url(tea.get("photo"))
-            if not url:
-                continue
-            size_key = (url, image_width, image_height)
-            self._request_photo(
-                url,
+            if (parts.get("photo_width"), parts.get("photo_height")) != (
                 image_width,
                 image_height,
-                CARD_PHOTO_RADIUS,
-                lambda picture, label=parts["photo_label"], key=size_key, w=image_width, h=image_height: (
-                    self._apply_card_photo(key, picture, label, w, h)
-                ),
-            )
+            ):
+                parts["photo_width"] = image_width
+                parts["photo_height"] = image_height
+                parts["photo_requested"] = not parts.get("photo_url")
+                self._sync_photo_layer(canvas)
+
+        self._schedule_visible_photos(50)
 
     def _on_window_configure(self, event) -> None:
         if event.widget is not self:
             return
+        self._schedule_relayout()
+
+    def _on_viewport_configure(self, _event=None) -> None:
+        """Canvas меняет ширину раньше/позже окна — ловим и его тоже."""
+        if self._closing:
+            return
+        self._schedule_relayout()
+        self._schedule_visible_photos(120)
+
+    def _schedule_relayout(self) -> None:
         if self._relayout_job is not None:
             self.after_cancel(self._relayout_job)
         self._relayout_job = self.after(RESIZE_DEBOUNCE_MS, self._relayout)
@@ -1185,9 +1394,15 @@ class TeaAdminApp(ctk.CTk):
 
     def _rebuild_order(self) -> None:
         self._order = sorted(self._by_id, key=self._sort_key.__getitem__)
+        self._order_dirty = False
+
+    def _ensure_order(self) -> None:
+        if self._order_dirty:
+            self._rebuild_order()
 
     def _filtered_keys(self) -> list[str]:
         """Отбор по готовому порядку — без сортировки и без пересборки haystack."""
+        self._ensure_order()
         query = self._active_query
         mode = self._filter_key
         result: list[str] = []
@@ -1213,12 +1428,10 @@ class TeaAdminApp(ctk.CTk):
             return str(value)
         return str(id(tea))
 
-    def _schedule_render(self, delay: int = LOAD_RENDER_DEBOUNCE_MS) -> None:
-        if self._closing:
+    def _schedule_render(self) -> None:
+        if self._closing or self._render_job is not None:
             return
-        if self._render_job is not None:
-            self.after_cancel(self._render_job)
-        self._render_job = self.after(delay, self._apply_scheduled_render)
+        self._render_job = self.after(0, self._apply_scheduled_render)
 
     def _apply_scheduled_render(self) -> None:
         self._render_job = None
@@ -1229,6 +1442,11 @@ class TeaAdminApp(ctk.CTk):
     def _render_cards(self, reset: bool = False) -> None:
         if self._closing:
             return
+
+        # Любой новый проход отменяет незавершённый предыдущий: иначе старый
+        # after_idle может доставить карточки уже после смены раскладки.
+        self._render_token += 1
+        token = self._render_token
 
         previous_columns = self._columns
         previous_width = self._card_width
@@ -1252,18 +1470,24 @@ class TeaAdminApp(ctk.CTk):
             return
 
         self._clear_state()
-        self._render_token += 1
         self._rendered_once = True
 
         visible = keys[: self._shown]
-        # «Показать ещё» дорисовывает только новые карточки: остальные уже
-        # стоят на местах, и повторный grid на каждую порцию — лишняя работа.
+        # Только «Показать ещё» дорисовывает новые карточки поверх готовых.
+        # При смене размера/загрузке раскладываем все заново: пропуск уже
+        # посчитанных карточек оставлял часть из них в старой сетке.
         start = 0
-        if not reset and previous_columns == columns and previous_width == card_width:
+        if (
+            self._loading_more
+            and not reset
+            and previous_columns == columns
+            and previous_width == card_width
+        ):
             start = min(self._placed_count, len(visible))
+        self._placed_count = start
         self._place_visible(
             visible,
-            self._render_token,
+            token,
             start,
             columns,
             card_width,
@@ -1299,14 +1523,20 @@ class TeaAdminApp(ctk.CTk):
         card_width: int,
         reset: bool,
     ) -> None:
-        """Раскладывает карточки кусками по ~12 мс, чтобы окно не подвисало."""
+        """Раскладывает карточки кусками по ~24 мс, чтобы окно не подвисало."""
         if token != self._render_token or self._closing:
-            self._placing = False
+            # Старый проход не должен сбрасывать флаг нового.
+            if self._placing_token == token:
+                self._placing = False
             return
 
         self._placing = True
+        self._placing_token = token
         deadline = time.perf_counter() + RENDER_BUDGET_MS / 1000
         total = len(keys)
+
+        if index == 0:
+            self._hide_stale_cards(set(keys))
 
         while index < total and time.perf_counter() < deadline:
             key = keys[index]
@@ -1329,11 +1559,11 @@ class TeaAdminApp(ctk.CTk):
             self._placed_count = index
 
         if index < total:
-            # after_idle, а не after(1): таймер Windows имеет гранулярность
-            # ~15 мс, и на каждую карточку получалась лишняя пауза с полным
-            # пересчётом геометрии уже разложенных карточек.
-            self.after_idle(
-                lambda: self._place_visible(keys, token, index, columns, card_width, reset)
+            # after(1), а не after_idle: idle-цепочка выполнялась целиком
+            # внутри одного update(), и окно не успевало перерисоваться.
+            self.after(
+                RENDER_YIELD_MS,
+                lambda: self._place_visible(keys, token, index, columns, card_width, reset),
             )
             return
 
@@ -1353,6 +1583,8 @@ class TeaAdminApp(ctk.CTk):
         self._place_footer(max(0, self._total_filtered - len(keys)), columns)
         if reset:
             self._reset_scroll()
+        # Фото качаем только после того, как карточки получили координаты.
+        self._schedule_visible_photos(50)
 
     def _prune_cards(self, visible: set[str]) -> None:
         """Держит в памяти карточки только текущего и предыдущего экрана."""
@@ -1437,6 +1669,7 @@ class TeaAdminApp(ctk.CTk):
                 break
         if not inside:
             return
+        self._schedule_visible_photos(60)
         # Один жест = одна догрузка: без after_cancel очередь задач колеса
         # превращалась в каскад полных перерисовок.
         if self._wheel_job is not None:
@@ -1463,6 +1696,55 @@ class TeaAdminApp(ctk.CTk):
         if canvas is not None:
             canvas.yview_moveto(0.0)
 
+    def _ui_scale(self) -> float:
+        """Коэффициент DPI-масштаба CustomTkinter для текущего окна."""
+        try:
+            return ctk.ScalingTracker.get_widget_scaling(self)
+        except Exception:
+            return 1.0
+
+    def _scaled_px(self, value: int) -> int:
+        """Пиксели Tk не масштабируются сами — приводим к DPI окна."""
+        return int(round(value * self._ui_scale()))
+
+    def _text_label(
+        self,
+        parent,
+        text: str,
+        *,
+        size: int,
+        color: str,
+        bold: bool = False,
+        anchor: str = "w",
+        justify: str = "left",
+        wraplength: int = 0,
+        height: int = 0,
+        bg: str = COLOR_SURFACE,
+    ) -> tk.Label:
+        """Текстовый слой карточки на нативном ``tk.Label``.
+
+        ``CTkLabel`` — это отдельный Tk-canvas на каждый текст, то есть
+        шесть лишних canvas на карточку. При сотнях карточек Tk тратит
+        основное время на их перерисовку (в замерах ~55 мс на карточку):
+        отсюда лаги и чёрные полосы при прокрутке. ``tk.Label`` рисует
+        тот же текст без собственного canvas.
+        """
+        scale = self._ui_scale()
+        return tk.Label(
+            parent,
+            text=text,
+            font=(FONT, max(7, int(round(size * scale))), "bold" if bold else "normal"),
+            fg=color,
+            bg=bg,
+            anchor=anchor,
+            justify=justify,
+            wraplength=int(round(wraplength * scale)) if wraplength else 0,
+            padx=0,
+            pady=0,
+            borderwidth=0,
+            highlightthickness=0,
+        )
+
     def _build_card(self, tea: dict, card_width: int) -> ctk.CTkFrame:
         availability = bool(tea.get("availability"))
         image_width = max(140, card_width - 16)
@@ -1477,117 +1759,94 @@ class TeaAdminApp(ctk.CTk):
             border_width=1,
             border_color=COLOR_BORDER,
         )
+        card.grid_columnconfigure(0, weight=1)
 
-        photo_frame = ctk.CTkFrame(
+        photo_canvas, photo_bg_item, photo_item = self._build_photo_layer(
             card,
-            fg_color=COLOR_SOFT,
-            corner_radius=12,
-            width=image_width,
-            height=image_height,
+            image_width,
+            image_height,
+            availability,
         )
-        photo_frame.grid(row=0, column=0, sticky="ew", padx=8, pady=(8, 0))
-        photo_frame.grid_propagate(False)
-
-        photo_label = ctk.CTkLabel(
-            photo_frame,
-            text="",
-            fg_color="transparent",
-            image=self._placeholder_image(image_width, image_height, 12),
+        photo_canvas.grid(
+            row=0,
+            column=0,
+            columnspan=2,
+            sticky="ew",
+            padx=8,
+            pady=(8, 0),
         )
-        photo_label.place(relx=0.5, rely=0.5, anchor="center")
 
-        badge_text = "В наличии" if availability else "Нет в наличии"
-        badge = ctk.CTkLabel(
-            photo_frame,
-            text=badge_text,
-            width=max(54, int(len(badge_text) * 7) + 16),
-            height=22,
-            corner_radius=8,
-            fg_color=COLOR_ACCENT if availability else COLOR_UNAVAILABLE,
-            text_color="#FFFFFF",
-            font=(FONT, 10, "bold"),
+        type_label = self._text_label(
+            card,
+            TEA_TYPE_LABELS.get(tea.get("tea_type"), tea.get("tea_type") or "Другое").upper(),
+            size=10,
+            bold=True,
+            color=COLOR_ACCENT if availability else COLOR_MUTED,
         )
-        badge.place(x=8, y=8)
-
-        body = ctk.CTkFrame(card, fg_color="transparent")
-        body.grid(row=1, column=0, sticky="ew", padx=12, pady=(10, 12))
-        body.grid_columnconfigure(0, weight=1)
-
-        type_label = ctk.CTkLabel(
-            body,
-            text=TEA_TYPE_LABELS.get(tea.get("tea_type"), tea.get("tea_type") or "Другое").upper(),
-            font=(FONT, 10, "bold"),
-            text_color=COLOR_ACCENT if availability else COLOR_MUTED,
-            anchor="w",
+        type_label.grid(
+            row=1, column=0, columnspan=2, sticky="w", padx=12, pady=(10, 0)
         )
-        type_label.grid(row=0, column=0, sticky="w")
 
-        name_label = ctk.CTkLabel(
-            body,
-            text=shorten(tea.get("name"), name_limit),
-            font=(FONT, 14, "bold"),
-            text_color=COLOR_TEXT if availability else COLOR_MUTED,
-            anchor="w",
-            justify="left",
+        name_label = self._text_label(
+            card,
+            shorten(tea.get("name"), name_limit),
+            size=14,
+            bold=True,
+            color=COLOR_TEXT if availability else COLOR_MUTED,
             wraplength=wrap,
-            height=42,
+            height=2,
         )
-        name_label.grid(row=1, column=0, sticky="ew", pady=(3, 2))
+        name_label.grid(
+            row=2, column=0, columnspan=2, sticky="ew", padx=12, pady=(3, 2)
+        )
 
         region = REGION_LABELS.get(tea.get("place_of_harvest"), tea.get("place_of_harvest"))
         year = tea.get("year_of_harvest")
         meta_parts = [str(part) for part in (region, year) if part]
-        meta_label = ctk.CTkLabel(
-            body,
-            text=" · ".join(meta_parts) or "Регион не указан",
-            font=(FONT, 11),
-            text_color=COLOR_MUTED,
-            anchor="w",
+        meta_label = self._text_label(
+            card,
+            " · ".join(meta_parts) or "Регион не указан",
+            size=11,
+            color=COLOR_MUTED,
         )
-        meta_label.grid(row=2, column=0, sticky="w")
+        meta_label.grid(row=3, column=0, columnspan=2, sticky="w", padx=12)
 
-        bottom = ctk.CTkFrame(body, fg_color="transparent")
-        bottom.grid(row=3, column=0, sticky="ew", pady=(8, 0))
-        bottom.grid_columnconfigure(0, weight=1)
-
-        price_label = ctk.CTkLabel(
-            bottom,
-            text=format_price(tea.get("price")),
-            font=(FONT, 16, "bold"),
-            text_color=COLOR_ACCENT if availability else COLOR_MUTED,
-            anchor="w",
+        price_label = self._text_label(
+            card,
+            format_price(tea.get("price")),
+            size=16,
+            bold=True,
+            color=COLOR_ACCENT if availability else COLOR_MUTED,
         )
-        price_label.grid(row=0, column=0, sticky="w")
+        price_label.grid(row=4, column=0, sticky="w", padx=(12, 0), pady=(8, 0))
 
-        mark_label = ctk.CTkLabel(
-            bottom,
-            text=format_mark(tea.get("mark")),
-            font=(FONT, 11, "bold"),
-            text_color=COLOR_MARK,
+        mark_label = self._text_label(
+            card,
+            format_mark(tea.get("mark")),
+            size=11,
+            bold=True,
+            color=COLOR_MARK,
             anchor="e",
         )
-        mark_label.grid(row=0, column=1, sticky="e")
+        mark_label.grid(row=4, column=1, sticky="e", padx=(0, 12), pady=(8, 0))
 
-        purchase_label = ctk.CTkLabel(
-            body,
-            text="Магазин: " + shorten(tea.get("place_of_purchase"), 30),
-            font=(FONT, 10),
-            text_color=COLOR_MUTED,
-            anchor="w",
+        purchase_label = self._text_label(
+            card,
+            "Магазин: " + shorten(tea.get("place_of_purchase"), 30),
+            size=10,
+            color=COLOR_MUTED,
             wraplength=wrap,
         )
-        purchase_label.grid(row=4, column=0, sticky="w", pady=(6, 0))
+        purchase_label.grid(
+            row=5, column=0, columnspan=2, sticky="w", padx=12, pady=(6, 12)
+        )
 
         for widget in (
             card,
-            photo_frame,
-            photo_label,
-            badge,
-            body,
+            photo_canvas,
             type_label,
             name_label,
             meta_label,
-            bottom,
             price_label,
             mark_label,
             purchase_label,
@@ -1598,26 +1857,23 @@ class TeaAdminApp(ctk.CTk):
                 add="+",
             )
 
-        self._card_parts[self._tea_key(tea)] = {
+        url = media_url(tea.get("photo"))
+        parts = {
             "tea": tea,
-            "photo_frame": photo_frame,
-            "photo_label": photo_label,
+            "photo_canvas": photo_canvas,
+            "photo_bg_item": photo_bg_item,
+            "photo_item": photo_item,
+            "photo_shown": False,
+            "photo_photo": None,
             "name_label": name_label,
             "purchase_label": purchase_label,
+            "photo_url": url,
+            "photo_width": image_width,
+            "photo_height": image_height,
+            "photo_requested": not url,
         }
-
-        url = media_url(tea.get("photo"))
-        if url:
-            key = (url, image_width, image_height)
-            self._request_photo(
-                url,
-                image_width,
-                image_height,
-                CARD_PHOTO_RADIUS,
-                lambda picture, label=photo_label, size_key=key, w=image_width, h=image_height: (
-                    self._apply_card_photo(size_key, picture, label, w, h)
-                ),
-            )
+        self._card_parts[self._tea_key(tea)] = parts
+        photo_canvas._tea_parts = parts
 
         return card
 
@@ -1637,22 +1893,184 @@ class TeaAdminApp(ctk.CTk):
             base.putalpha(rounded_mask(width, height, radius))
         return self._image_cache_put(key, base, width, height)
 
+    def _native_image(self, key: tuple, image: Image.Image) -> ImageTk.PhotoImage:
+        """PIL → tk.PhotoImage с кэшем: только главный поток, только Tk."""
+        cached = self._native_images.get(key)
+        if cached is not None:
+            self._native_images.move_to_end(key)
+            return cached
+        photo = ImageTk.PhotoImage(image, master=self)
+        self._native_images[key] = photo
+        self._native_images.move_to_end(key)
+        while len(self._native_images) > NATIVE_IMAGE_CACHE_LIMIT:
+            self._native_images.popitem(last=False)
+        return photo
+
+    def _static_image(self, key: tuple, image: Image.Image) -> ImageTk.PhotoImage:
+        cached = self._static_images.get(key)
+        if cached is not None:
+            return cached
+        photo = ImageTk.PhotoImage(image, master=self)
+        self._static_images[key] = photo
+        return photo
+
+    def _photo_background(self, width: int, height: int, radius: int) -> ImageTk.PhotoImage:
+        """Скруглённая подложка под фото (видна в прозрачных углах кадра)."""
+        key = ("__photo_bg__", width, height, radius)
+        cached = self._static_images.get(key)
+        if cached is not None:
+            return cached
+        image = Image.new("RGBA", (width, height), COLOR_SOFT)
+        if radius > 0:
+            image.putalpha(rounded_mask(width, height, radius))
+        return self._static_image(key, image)
+
+    def _photo_placeholder(self, width: int, height: int, radius: int) -> ImageTk.PhotoImage:
+        key = ("__placeholder__", width, height, radius)
+        cached = self._static_images.get(key)
+        if cached is not None:
+            return cached
+        image = placeholder_photo(width, height).convert("RGBA")
+        if radius > 0:
+            image.putalpha(rounded_mask(width, height, radius))
+        return self._static_image(key, image)
+
+    def _badge_image(self, text: str, color: str) -> ImageTk.PhotoImage:
+        """Рамка «В наличии» рисуется один раз на текст и масштаб.
+
+        Раньше это был отдельный CTkLabel-canvas на каждую карточку; теперь
+        бейдж — картинка внутри фото-canvas'а.
+        """
+        scale = max(0.75, self._ui_scale())
+        font_size = max(8, int(round(10 * scale)))
+        key = ("__badge__", text, color, font_size, round(scale, 2))
+        cached = self._static_images.get(key)
+        if cached is not None:
+            return cached
+
+        try:
+            font = ImageFont.truetype("segoeuib.ttf", font_size)
+            big_font = ImageFont.truetype("segoeuib.ttf", font_size * 3)
+        except OSError:
+            font = ImageFont.load_default(size=font_size)
+            big_font = ImageFont.load_default(size=font_size * 3)
+        bbox = font.getbbox(text)
+        text_width = max(1, bbox[2] - bbox[0])
+        pad = max(8, int(round(9 * scale)))
+        height = max(22, int(round(22 * scale)))
+        width = max(int(round(54 * scale)), text_width + 2 * pad)
+        radius = max(6, int(round(8 * scale)))
+
+        # Рисуем в 3× и уменьшаем: PIL не сглаживает края сам.
+        ss = 3
+        big = Image.new("RGBA", (width * ss, height * ss), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(big)
+        draw.rounded_rectangle(
+            (0, 0, width * ss - 1, height * ss - 1),
+            radius=radius * ss,
+            fill=color,
+        )
+        draw.text(
+            (width * ss / 2, height * ss / 2),
+            text,
+            font=big_font,
+            fill="#FFFFFF",
+            anchor="mm",
+        )
+        image = big.resize((width, height), Image.Resampling.LANCZOS)
+        return self._static_image(key, image)
+
+    def _build_photo_layer(
+        self,
+        parent,
+        width: int,
+        height: int,
+        availability: bool,
+    ) -> tuple[tk.Canvas, int, int]:
+        """Фото-область карточки: один нативный canvas вместо трёх CTk-виджетов.
+
+        CTkFrame + CTkLabel + CTkLabel — это три отдельных Tk-canvas, каждый
+        со своей перерисовкой скруглений. Нативные canvas-элементы рисуются
+        заметно дешевле, а визуально слой тот же: подложка, фото, бейдж.
+        """
+        canvas = tk.Canvas(
+            parent,
+            width=width,
+            height=height,
+            bg=COLOR_SURFACE,
+            bd=0,
+            highlightthickness=0,
+            takefocus=0,
+        )
+        bg_item = canvas.create_image(
+            0,
+            0,
+            anchor="nw",
+            image=self._photo_background(width, height, CARD_PHOTO_RADIUS),
+        )
+        photo_item = canvas.create_image(
+            0,
+            0,
+            anchor="nw",
+            image=self._photo_placeholder(width, height, CARD_PHOTO_RADIUS),
+        )
+        badge_text = "В наличии" if availability else "Нет в наличии"
+        badge_color = COLOR_ACCENT if availability else COLOR_UNAVAILABLE
+        canvas.create_image(
+            8,
+            8,
+            anchor="nw",
+            image=self._badge_image(badge_text, badge_color),
+        )
+        canvas.bind(
+            "<Configure>",
+            lambda _event, widget=canvas: self._sync_photo_layer(widget),
+            add="+",
+        )
+        return canvas, bg_item, photo_item
+
+    def _sync_photo_layer(self, canvas: tk.Canvas) -> None:
+        """Подгоняет подложку под ширину колонки и центрирует фото.
+
+        Canvas с ``sticky="ew"`` растягивается шире картинки: без этой
+        синхронизации справа оставалась полоса фона, а фото прилипало влево.
+        """
+        parts = getattr(canvas, "_tea_parts", None)
+        if not parts:
+            return
+        try:
+            width = canvas.winfo_width()
+            height = canvas.winfo_height()
+            if width <= 2 or height <= 2:
+                return
+            if parts.get("canvas_size") != (width, height):
+                parts["canvas_size"] = (width, height)
+                canvas.itemconfigure(
+                    parts["photo_bg_item"],
+                    image=self._photo_background(width, height, CARD_PHOTO_RADIUS),
+                )
+            offset = max(0, (width - parts["photo_width"]) // 2)
+            canvas.coords(parts["photo_item"], offset, 0)
+        except tk.TclError:
+            pass
+
     def _apply_card_photo(
         self,
         key: tuple[str, int, int],
         image: Image.Image | None,
-        label: ctk.CTkLabel,
-        width: int,
-        height: int,
-    ) -> None:
+        canvas: tk.Canvas,
+        item: int,
+    ) -> ImageTk.PhotoImage | None:
         if image is None:
-            return
+            return None
         try:
-            if not label.winfo_exists():
-                return
+            if not canvas.winfo_exists():
+                return None
+            photo = self._native_image(key, image)
+            canvas.itemconfigure(item, image=photo)
+            return photo
         except tk.TclError:
-            return
-        label.configure(image=self._ctk_image(key, image, width, height), text="")
+            return None
 
     def _ctk_image(
         self,
@@ -1700,6 +2118,106 @@ class TeaAdminApp(ctk.CTk):
 
         self._photo_pending[key] = [callback]
         self._photo_queue.put((self._photo_epoch, key, url, width, height, radius))
+
+    def _schedule_visible_photos(self, delay: int = 80) -> None:
+        """Ставит в очередь фото только для карточек у экрана.
+
+        Раньше ``_build_card`` сразу качал фото для каждой созданной карточки.
+        После «Показать ещё» это могло быть 80+ загрузок ради 8 видимых
+        карточек: сеть и UI захлёбывались. Теперь фото догружаются по мере
+        прокрутки, с запасом в один экран.
+        """
+        if self._closing or self._photo_visibility_job is not None:
+            return
+        self._photo_visibility_job = self.after(delay, self._queue_visible_photos)
+
+    def _queue_visible_photos(self) -> None:
+        self._photo_visibility_job = None
+        if self._closing:
+            return
+        canvas = getattr(self.scroll, "_parent_canvas", None)
+        if canvas is None:
+            return
+        try:
+            viewport_height = canvas.winfo_height()
+            if viewport_height <= 1:
+                return
+            top = canvas.canvasy(0)
+        except tk.TclError:
+            return
+
+        margin = max(240, viewport_height)
+        lower = top - margin
+        upper = top + viewport_height + margin
+
+        deferred = False
+        for key, parts in list(self._card_parts.items()):
+            if parts.get("photo_requested") or not parts.get("photo_url"):
+                continue
+            card = self._card_widgets.get(key)
+            if card is None:
+                continue
+            try:
+                if not card.winfo_ismapped():
+                    # Карточка ещё не разложена: её winfo_y() пока 0, и по
+                    # такой координате в «видимые» попали бы все подряд.
+                    deferred = True
+                    continue
+                card_top = card.winfo_y()
+                card_height = max(card.winfo_height(), card.winfo_reqheight())
+            except tk.TclError:
+                continue
+            if card_top + card_height < lower or card_top > upper:
+                continue
+            self._request_card_photo(key, parts)
+
+        if deferred and self._photo_scan_retries < 2:
+            self._photo_scan_retries += 1
+            self._schedule_visible_photos(80)
+        else:
+            self._photo_scan_retries = 0
+
+    def _request_card_photo(self, key: str, parts: dict) -> None:
+        url = parts["photo_url"]
+        width = parts["photo_width"]
+        height = parts["photo_height"]
+        parts["photo_requested"] = True
+        self._request_photo(
+            url,
+            width,
+            height,
+            CARD_PHOTO_RADIUS,
+            lambda picture, item_key=key, item_parts=parts, w=width, h=height: (
+                self._apply_card_photo_if_current(
+                    item_key, item_parts, picture, w, h
+                )
+            ),
+        )
+
+    def _apply_card_photo_if_current(
+        self,
+        key: str,
+        parts: dict,
+        picture: Image.Image | None,
+        width: int,
+        height: int,
+    ) -> None:
+        # Пока фото ехало, карточку могли пересобрать или переверстать.
+        if self._card_parts.get(key) is not parts:
+            return
+        if (parts.get("photo_width"), parts.get("photo_height")) != (width, height):
+            return
+        # Держим ссылку и на карточке: PhotoImage из кэша может быть вытеснен,
+        # а canvas хранит только Tcl-имя и без Python-объекта останется пустым.
+        photo = self._apply_card_photo(
+            (parts.get("photo_url"), width, height),
+            picture,
+            parts["photo_canvas"],
+            parts["photo_item"],
+        )
+        if photo is not None:
+            parts["photo_photo"] = photo
+            parts["photo_shown"] = True
 
     def _photo_session(self) -> requests.Session:
         """Своя сессия на поток: requests.Session не потокобезопасен."""
@@ -1785,6 +2303,13 @@ class TeaAdminApp(ctk.CTk):
             response = session.get(url, timeout=8)
             response.raise_for_status()
             image = Image.open(io.BytesIO(response.content))
+            # JPEG можно декодировать сразу в уменьшенном масштабе. Для
+            # фотографий 4000×3000 это в разы быстрее и не занимает десятки
+            # мегабайт под полноразмерный RGB.
+            try:
+                image.draft("RGB", RAW_PHOTO_SIZE)
+            except (OSError, ValueError):
+                pass
             image.load()
             image = ImageOps.exif_transpose(image).convert("RGB")
             image.thumbnail(RAW_PHOTO_SIZE, Image.Resampling.LANCZOS)
@@ -2164,6 +2689,7 @@ class TeaAdminApp(ctk.CTk):
             self._render_job,
             self._wheel_job,
             self._drain_job,
+            self._photo_visibility_job,
         ):
             if job is not None:
                 try:
